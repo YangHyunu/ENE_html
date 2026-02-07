@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MCP Agent | LangGraph 기반 Multi-Server MCP AI 어시스턴트</title>
+    <title>ENE | LangGraph 기반 Multi-Server MCP AI 어시스턴트</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
@@ -697,7 +697,67 @@
             line-height: 1;
         }
 
+        /* ReAct loop phase - dashed border to show cycle */
+        .react-loop-phase {
+            border-style: dashed !important;
+            border-width: 2px !important;
+            position: relative;
+        }
+
+        .react-loop-phase::after {
+            content: 'LOOP';
+            position: absolute;
+            top: -10px;
+            right: 20px;
+            font-family: var(--font-mono);
+            font-size: 0.6rem;
+            font-weight: 700;
+            color: var(--cyan);
+            background: var(--bg-root);
+            padding: 0 8px;
+            letter-spacing: 0.12em;
+        }
+
+        .react-branches {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .react-branch {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            text-align: center;
+        }
+
+        .react-loop-arrow {
+            font-size: 1.6rem;
+            color: var(--cyan);
+            line-height: 1;
+            font-weight: 700;
+            animation: loopPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes loopPulse {
+            0%, 100% { opacity: 0.5; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.15); }
+        }
+
+        .react-exit-label {
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--green);
+            padding: 8px 14px;
+            border-radius: var(--radius-sm);
+            background: var(--green-dim);
+        }
+
         @media (max-width: 640px) {
+            .react-branches,
             .flow-routing-branches {
                 grid-template-columns: 1fr;
                 gap: 16px;
@@ -1503,7 +1563,7 @@
      HEADER
      =========================== -->
 <header class="header">
-    <div class="header-logo">MCP Agent</div>
+    <div class="header-logo">ENE</div>
     <nav class="header-nav" id="headerNav">
         <a href="#overview">Overview</a>
         <a href="#architecture">Architecture</a>
@@ -1530,7 +1590,7 @@
                 <span class="hero-badge">부스트캠프 AI Tech NLP-05</span>
             </div>
             <h1 class="hero-title reveal reveal-delay-1">
-                <span class="gradient-text">MCP Agent</span><br>Architecture
+                <span class="gradient-text">ENE</span><br>Architecture
             </h1>
             <p class="hero-subtitle reveal reveal-delay-2">LangGraph 기반 Multi-Server MCP AI 어시스턴트</p>
             <p class="hero-desc reveal reveal-delay-3">
@@ -1565,7 +1625,7 @@
         <div class="container">
             <span class="section-label reveal">System Overview</span>
             <h2 class="section-title reveal reveal-delay-1">시스템 구성 요소</h2>
-            <p class="section-desc reveal reveal-delay-2">MCP Agent를 구성하는 6개의 핵심 컴포넌트</p>
+            <p class="section-desc reveal reveal-delay-2">ENE를 구성하는 6개의 핵심 컴포넌트</p>
 
             <div class="overview-grid">
                 <!-- Card 1 -->
@@ -1646,64 +1706,68 @@
                     </div>
                     <div class="flow-vline"></div>
 
-                    <!-- PHASE 3: Agent -->
-                    <div class="flow-phase phase-agent">
+                    <!-- PHASE 3: ReAct Loop (Agent + Tools) -->
+                    <div class="flow-phase phase-agent react-loop-phase">
                         <span class="flow-phase-number">3</span>
-                        <div class="flow-phase-label">Agent Phase</div>
-                        <div class="flow-node cyan-border">
+                        <div class="flow-phase-label">ReAct Loop</div>
+
+                        <!-- Agent node -->
+                        <div class="flow-node cyan-border react-agent-node" id="reactAgent">
                             <div class="flow-node-title" style="color: var(--cyan);">AgentNode</div>
                             <div class="flow-node-desc">ChatClovaX (HCX-005) 호출, MCP tool binding, 응답 생성</div>
                         </div>
-                    </div>
-                    <div class="flow-vline"></div>
 
-                    <!-- PHASE 4: Routing -->
-                    <div class="flow-phase phase-routing">
-                        <span class="flow-phase-number">4</span>
-                        <div class="flow-phase-label">Routing Phase</div>
-                        <div class="flow-node orange-border" style="text-align:center; margin-bottom: 16px;">
+                        <div class="flow-vline" style="height:20px;"></div>
+
+                        <!-- Router -->
+                        <div class="flow-node orange-border" style="text-align:center;">
                             <div class="flow-node-title" style="color: var(--orange);">route_after_agent()</div>
                             <div class="flow-node-desc">tool_calls 유무 및 안전 등급에 따라 분기</div>
                         </div>
 
-                        <!-- 3 branches -->
-                        <div class="flow-routing-branches">
-                            <!-- Branch 1: No tools -->
-                            <div class="flow-route-path">
-                                <span class="flow-route-tag green-tag">No tool_calls</span>
-                                <div class="flow-route-vline"></div>
-                                <div class="flow-route-steps">
-                                    <div class="flow-route-step" style="color: var(--pink); border-color: rgba(236,72,153,0.35);">Memory Manager</div>
-                                    <span class="flow-route-micro-arrow">&#9660;</span>
-                                    <div class="flow-route-step" style="color: var(--red); border-color: rgba(239,68,68,0.35);">END</div>
-                                </div>
-                            </div>
-
-                            <!-- Branch 2: Safe tools -->
-                            <div class="flow-route-path">
+                        <!-- 3 branches inside loop -->
+                        <div class="react-branches">
+                            <!-- Branch: Safe tools (loops back) -->
+                            <div class="react-branch">
                                 <span class="flow-route-tag blue-tag">Safe tools</span>
                                 <div class="flow-route-vline"></div>
-                                <div class="flow-route-steps">
-                                    <div class="flow-route-step" style="color: var(--green); border-color: rgba(34,197,94,0.35);">ToolNode</div>
-                                    <span class="flow-route-micro-arrow">&#9660;</span>
-                                    <div class="flow-route-step" style="color: var(--cyan); border-color: rgba(6,182,212,0.35);">Agent (loop)</div>
-                                </div>
+                                <div class="flow-route-step" style="color: var(--green); border-color: rgba(34,197,94,0.35);">ToolNode</div>
+                                <div class="react-loop-arrow" title="Back to AgentNode">&#x21BA;</div>
                             </div>
 
-                            <!-- Branch 3: Sensitive tools -->
-                            <div class="flow-route-path">
+                            <!-- Branch: No tools (exits loop) -->
+                            <div class="react-branch react-branch-exit">
+                                <span class="flow-route-tag green-tag">No tool_calls</span>
+                                <div class="flow-route-vline"></div>
+                                <div class="react-exit-label">Exit Loop &#x2193;</div>
+                            </div>
+
+                            <!-- Branch: Sensitive tools (loops back) -->
+                            <div class="react-branch">
                                 <span class="flow-route-tag orange-tag">Sensitive tools</span>
                                 <div class="flow-route-vline"></div>
-                                <div class="flow-route-steps">
-                                    <div class="flow-route-step" style="color: var(--orange); border-color: rgba(245,158,11,0.35);">HITL Review</div>
-                                    <span class="flow-route-micro-arrow">&#9660;</span>
-                                    <div class="flow-route-step" style="color: var(--green); border-color: rgba(34,197,94,0.35);">ToolNode</div>
-                                    <span class="flow-route-micro-arrow">&#9660;</span>
-                                    <div class="flow-route-step" style="color: var(--cyan); border-color: rgba(6,182,212,0.35);">Agent (loop)</div>
-                                </div>
+                                <div class="flow-route-step" style="color: var(--orange); border-color: rgba(245,158,11,0.35);">HITL Review</div>
+                                <span class="flow-route-micro-arrow">&#9660;</span>
+                                <div class="flow-route-step" style="color: var(--green); border-color: rgba(34,197,94,0.35);">ToolNode</div>
+                                <div class="react-loop-arrow" title="Back to AgentNode">&#x21BA;</div>
                             </div>
                         </div>
                     </div>
+                    <div class="flow-vline"></div>
+
+                    <!-- PHASE 4: Memory & End -->
+                    <div class="flow-phase phase-routing">
+                        <span class="flow-phase-number">4</span>
+                        <div class="flow-phase-label">Finalize Phase</div>
+                        <div class="flow-node pink-border">
+                            <div class="flow-node-title" style="color: var(--pink);">MemoryManagerNode</div>
+                            <div class="flow-node-desc">슬라이딩 윈도우 트리밍, 요약 아카이브, 도구 메시지 정리</div>
+                        </div>
+                    </div>
+                    <div class="flow-vline"></div>
+
+                    <!-- END pill -->
+                    <div class="flow-pill end-pill">END</div>
 
                 </div>
             </div>
@@ -1881,14 +1945,14 @@
 
             <div class="char-gallery reveal reveal-delay-4">
                 <div class="char-gallery-card">
-                    <div class="sprite-wrap"><img class="sprite-anim" data-character="aya" data-emotion="basic" src="MCP_agent/agent/assets/aya/basic/frame_000.png" alt="aya"></div>
-                    <div class="char-gallery-name">Aya</div>
-                    <div class="char-gallery-sub">default character</div>
-                </div>
-                <div class="char-gallery-card">
                     <div class="sprite-wrap"><img class="sprite-anim" data-character="cirno" data-emotion="basic" src="MCP_agent/agent/assets/cirno/basic/frame_000.png" alt="cirno"></div>
                     <div class="char-gallery-name">Cirno</div>
                     <div class="char-gallery-sub">ice fairy</div>
+                </div>
+                <div class="char-gallery-card">
+                    <div class="sprite-wrap"><img class="sprite-anim" data-character="aya" data-emotion="basic" src="MCP_agent/agent/assets/aya/basic/frame_000.png" alt="aya"></div>
+                    <div class="char-gallery-name">Aya</div>
+                    <div class="char-gallery-sub">default character</div>
                 </div>
                 <div class="char-gallery-card">
                     <div class="sprite-wrap"><img class="sprite-anim" data-character="koishi" data-emotion="basic" src="MCP_agent/agent/assets/koishi/basic/frame_000.png" alt="koishi"></div>
@@ -1906,45 +1970,45 @@
             <h3 class="subsection-title reveal">7 Emotion States</h3>
 
             <div class="char-tab-bar reveal" id="charTabBar">
-                <button class="char-tab active" data-char="aya">Aya</button>
-                <button class="char-tab" data-char="cirno">Cirno</button>
+                <button class="char-tab active" data-char="cirno">Cirno</button>
+                <button class="char-tab" data-char="aya">Aya</button>
                 <button class="char-tab" data-char="koishi">Koishi</button>
                 <button class="char-tab" data-char="marisa">Marisa</button>
             </div>
 
             <div class="emotion-grid reveal" id="emotionGrid">
                 <div class="emotion-card">
-                    <div class="sprite-wrap"><img class="sprite-anim" data-character="aya" data-emotion="basic" src="MCP_agent/agent/assets/aya/basic/frame_000.png" alt="basic"></div>
+                    <div class="sprite-wrap"><img class="sprite-anim" data-character="cirno" data-emotion="basic" src="MCP_agent/agent/assets/cirno/basic/frame_000.png" alt="basic"></div>
                     <div class="emotion-name">basic</div>
                     <div class="emotion-label">기본</div>
                 </div>
                 <div class="emotion-card">
-                    <div class="sprite-wrap"><img class="sprite-anim" data-character="aya" data-emotion="happy" src="MCP_agent/agent/assets/aya/happy/frame_000.png" alt="happy"></div>
+                    <div class="sprite-wrap"><img class="sprite-anim" data-character="cirno" data-emotion="happy" src="MCP_agent/agent/assets/cirno/happy/frame_000.png" alt="happy"></div>
                     <div class="emotion-name">happy</div>
                     <div class="emotion-label">호감도 +</div>
                 </div>
                 <div class="emotion-card">
-                    <div class="sprite-wrap"><img class="sprite-anim" data-character="aya" data-emotion="love" src="MCP_agent/agent/assets/aya/love/frame_000.png" alt="love"></div>
+                    <div class="sprite-wrap"><img class="sprite-anim" data-character="cirno" data-emotion="love" src="MCP_agent/agent/assets/cirno/love/frame_000.png" alt="love"></div>
                     <div class="emotion-name">love</div>
                     <div class="emotion-label">호감도 최고</div>
                 </div>
                 <div class="emotion-card">
-                    <div class="sprite-wrap"><img class="sprite-anim" data-character="aya" data-emotion="sad" src="MCP_agent/agent/assets/aya/sad/frame_000.png" alt="sad"></div>
+                    <div class="sprite-wrap"><img class="sprite-anim" data-character="cirno" data-emotion="sad" src="MCP_agent/agent/assets/cirno/sad/frame_000.png" alt="sad"></div>
                     <div class="emotion-name">sad</div>
                     <div class="emotion-label">호감도 -</div>
                 </div>
                 <div class="emotion-card">
-                    <div class="sprite-wrap"><img class="sprite-anim" data-character="aya" data-emotion="angry" src="MCP_agent/agent/assets/aya/angry/frame_000.png" alt="angry"></div>
+                    <div class="sprite-wrap"><img class="sprite-anim" data-character="cirno" data-emotion="angry" src="MCP_agent/agent/assets/cirno/angry/frame_000.png" alt="angry"></div>
                     <div class="emotion-name">angry</div>
                     <div class="emotion-label">호감도 --</div>
                 </div>
                 <div class="emotion-card">
-                    <div class="sprite-wrap"><img class="sprite-anim" data-character="aya" data-emotion="pouting" src="MCP_agent/agent/assets/aya/pouting/frame_000.png" alt="pouting"></div>
+                    <div class="sprite-wrap"><img class="sprite-anim" data-character="cirno" data-emotion="pouting" src="MCP_agent/agent/assets/cirno/pouting/frame_000.png" alt="pouting"></div>
                     <div class="emotion-name">pouting</div>
                     <div class="emotion-label">삐침</div>
                 </div>
                 <div class="emotion-card">
-                    <div class="sprite-wrap"><img class="sprite-anim" data-character="aya" data-emotion="busy" src="MCP_agent/agent/assets/aya/busy/frame_000.png" alt="busy"></div>
+                    <div class="sprite-wrap"><img class="sprite-anim" data-character="cirno" data-emotion="busy" src="MCP_agent/agent/assets/cirno/busy/frame_000.png" alt="busy"></div>
                     <div class="emotion-name">busy</div>
                     <div class="emotion-label">도구 실행 중</div>
                 </div>
@@ -2065,7 +2129,7 @@
         <div class="container">
             <span class="section-label reveal">Quick Start</span>
             <h2 class="section-title reveal reveal-delay-1">빠른 시작</h2>
-            <p class="section-desc reveal reveal-delay-2">3단계로 MCP Agent를 실행하세요</p>
+            <p class="section-desc reveal reveal-delay-2">3단계로 ENE를 실행하세요</p>
 
             <div class="steps">
                 <div class="glass-card step-card reveal reveal-delay-1">
@@ -2125,6 +2189,10 @@ python MCP_agent/agent/\
 │   ├── <span class="file">analyzer.py</span> <span class="comment"># 분석</span>
 │   ├── <span class="file">context_builder.py</span>
 │   └── <span class="file">memory_manager.py</span>
+├── <span class="dir">utils/</span>
+│   ├── <span class="file">google_calendar_service.py</span> <span class="comment"># Google Calendar 서비스</span>
+│   ├── <span class="file">sliding_window_executor.py</span> <span class="comment"># Sliding Window 실행기</span>
+│   └── <span class="file">summary_executor.py</span> <span class="comment"># 요약 실행기</span>
 └── <span class="dir">Fast-MCP/</span>
     ├── <span class="dir">mcp_servers/</span> <span class="comment"># MCP 서버</span>
     └── <span class="dir">scripts/</span> <span class="comment"># 스크립트</span></div>
