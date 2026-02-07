@@ -1218,6 +1218,41 @@
             }
         }
 
+        /* Why-box: design rationale callouts */
+        .why-box {
+            margin: 24px 0;
+            padding: 20px 24px;
+            border-left: 3px solid var(--purple);
+            background: linear-gradient(135deg, rgba(124, 58, 237, 0.04), rgba(37, 99, 235, 0.02));
+            border-radius: 0 var(--radius-md) var(--radius-md) 0;
+            font-size: 0.84rem;
+            line-height: 1.8;
+            color: var(--text-secondary);
+        }
+        .why-box strong {
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+        .why-box .why-title {
+            font-family: var(--font-mono);
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: var(--purple);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin-bottom: 8px;
+        }
+        .why-box.blue-accent { border-left-color: var(--blue); }
+        .why-box.blue-accent .why-title { color: var(--blue); }
+        .why-box.cyan-accent { border-left-color: var(--cyan); }
+        .why-box.cyan-accent .why-title { color: var(--cyan); }
+        .why-box.orange-accent { border-left-color: var(--orange); }
+        .why-box.orange-accent .why-title { color: var(--orange); }
+        .why-box.pink-accent { border-left-color: var(--pink); }
+        .why-box.pink-accent .why-title { color: var(--pink); }
+        .why-box.green-accent { border-left-color: var(--green); }
+        .why-box.green-accent .why-title { color: var(--green); }
+
         /* Affinity table */
         .affinity-table-wrap {
             overflow-x: auto;
@@ -1677,6 +1712,13 @@
             <h2 class="section-title reveal reveal-delay-1">LangGraph Node Flow</h2>
             <p class="section-desc reveal reveal-delay-2">ReAct 패턴 기반의 에이전트 실행 흐름</p>
 
+            <div class="why-box cyan-accent reveal reveal-delay-2">
+                <div class="why-title">Why ReAct Loop?</div>
+                일반 챗봇은 "질문 &rarr; 답변" 단방향이지만, ENE는 <strong>스스로 판단해서 도구를 호출하고, 결과를 보고 다시 생각</strong>합니다.
+                "오늘 날씨 알려줘"라고 하면 Agent가 검색 도구를 호출하고, 결과를 받아서 자연어로 재구성합니다.
+                이 <strong>Reasoning &rarr; Action &rarr; Observation 루프</strong>가 단순 응답이 아닌 실질적인 작업 수행을 가능하게 합니다.
+            </div>
+
             <div class="flow-container reveal reveal-delay-3">
                 <div class="flow-vertical">
 
@@ -1783,6 +1825,14 @@
             <h2 class="section-title reveal reveal-delay-1">메시지 처리 흐름</h2>
             <p class="section-desc reveal reveal-delay-2">사용자 입력부터 응답까지 6단계 파이프라인</p>
 
+            <div class="why-box blue-accent reveal reveal-delay-2">
+                <div class="why-title">Why This Pipeline?</div>
+                단순히 LLM에 메시지를 던지면 <strong>맥락 없는 일회성 답변</strong>만 나옵니다.
+                ENE는 메시지가 들어오면 먼저 <strong>감정을 분석</strong>하고, <strong>과거 기억을 검색</strong>하고,
+                <strong>페르소나를 조립</strong>한 뒤에야 Agent가 응답합니다.
+                이 전처리 파이프라인 덕분에 "어제 추천해준 맛집 어땠어?"라는 질문에도 맥락에 맞는 답변이 가능합니다.
+            </div>
+
             <div class="timeline">
                 <!-- Step 1 -->
                 <div class="timeline-step reveal">
@@ -1838,6 +1888,14 @@
             <span class="section-label reveal">Memory</span>
             <h2 class="section-title reveal reveal-delay-1">이중 메모리 시스템</h2>
             <p class="section-desc reveal reveal-delay-2">단기 메모리와 장기 메모리의 자동 전환 아키텍처</p>
+
+            <div class="why-box pink-accent reveal reveal-delay-2">
+                <div class="why-title">Why Dual Memory?</div>
+                LLM의 Context Window는 유한합니다. 대화가 길어지면 오래된 기억이 사라지고, <strong>페르소나의 연속성이 끊어집니다.</strong>
+                이중 메모리는 이 문제를 해결합니다. <strong>단기 메모리(SQLite)</strong>가 현재 대화의 흐름과 호감도/감정 상태를 실시간 유지하고,
+                토큰이 초과되면 Clova Summary API가 자동으로 요약해서 <strong>장기 메모리(ChromaDB)</strong>에 아카이브합니다.
+                다음 대화에서 ContextBuilder가 벡터 유사도 검색으로 관련 기억을 꺼내오기 때문에, <strong>"지난주에 한 이야기도 기억하는" 페르소나</strong>가 가능합니다.
+            </div>
 
             <div class="memory-dual reveal reveal-delay-3">
                 <!-- Short-term -->
@@ -1904,6 +1962,14 @@
             <h2 class="section-title reveal reveal-delay-1">Tool Call System</h2>
             <p class="section-desc reveal reveal-delay-2">안전 등급에 따른 도구 실행 분류</p>
 
+            <div class="why-box orange-accent reveal reveal-delay-2">
+                <div class="why-title">Why Safe / Sensitive 분리?</div>
+                검색은 실수해도 괜찮지만, <strong>메시지 전송은 되돌릴 수 없습니다.</strong>
+                Safe 도구(검색, 조회)는 자동 실행해서 응답 속도를 높이고,
+                Sensitive 도구(메시지 전송, 캘린더 수정)는 <strong>HITL(Human-in-the-Loop) 승인</strong>을 거칩니다.
+                ENE가 "슬랙에 메시지 보낼까요?"라고 물어보고, 사용자가 확인해야만 실행됩니다.
+            </div>
+
             <div class="tool-grid">
                 <!-- Safe -->
                 <div class="glass-card tool-box safe-box reveal reveal-delay-3">
@@ -1939,6 +2005,15 @@
             <span class="section-label reveal">Persona</span>
             <h2 class="section-title reveal reveal-delay-1">감정 &amp; 호감도 시스템</h2>
             <p class="section-desc reveal reveal-delay-2">7가지 감정 상태와 10단계 호감도 기반 페르소나 관리</p>
+
+            <div class="why-box reveal reveal-delay-2">
+                <div class="why-title">Why Dynamic Persona?</div>
+                처음 만난 사람에게 반말하면 어색하듯, AI도 <strong>관계의 깊이에 맞는 말투</strong>가 필요합니다.
+                ENE는 매 대화마다 <strong>AnalyzerNode</strong>가 사용자의 감정과 호감도 변화를 분석합니다.
+                호감도 0~9에서는 "무엇을 도와드릴까요?"라고 하지만, 90 이상이 되면 "뭐야 왜 안 와~ 보고 싶었단 말이야!"로 변합니다.
+                <strong>시간 경과</strong>도 반영됩니다. 만난 지 1일차의 탐색적 태도와 365일차의 깊은 신뢰는 같을 수 없기 때문입니다.
+                이 두 축(호감도 10단계 + 시간 10단계)이 조합되어 <strong>100가지 이상의 페르소나 변화</strong>를 만들어냅니다.
+            </div>
 
             <!-- Character Gallery: All 4 Characters -->
             <h3 class="subsection-title reveal reveal-delay-3">4 Characters</h3>
@@ -2017,6 +2092,15 @@
             <!-- Affinity -->
             <h3 class="subsection-title reveal">10 Affinity Levels</h3>
             <p class="subsection-desc reveal">호감도에 따라 말투와 태도가 자연스럽게 변화합니다</p>
+
+            <div class="why-box green-accent reveal">
+                <div class="why-title">How It Works</div>
+                사용자가 메시지를 보내면 <strong>AnalyzerNode</strong>가 감정(7가지)과 호감도 변화량(-5 ~ +5)을 실시간 분석합니다.
+                이 결과가 <strong>PersonaManager</strong>에 전달되면, 현재 호감도(0~100)와 만남 일수를 조합해
+                <strong>tone_steps[10] &times; time_steps[10]</strong> 매트릭스에서 적절한 말투 가이드라인을 생성합니다.
+                이 가이드라인이 System Prompt에 주입되어 Agent의 응답 스타일을 결정합니다.
+                호감도는 SQLite에 영구 저장되므로, <strong>세션을 닫았다 열어도 관계가 이어집니다.</strong>
+            </div>
 
             <div class="affinity-table-wrap reveal reveal-delay-1">
                 <table class="affinity-table">
